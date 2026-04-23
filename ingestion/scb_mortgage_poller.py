@@ -22,11 +22,11 @@ logging.basicConfig(
 )
 log = logging.getLogger(__name__)
 
-S3_BUCKET = env("SWEDISH_MORTGAGES_S3_BUCKET", "dbt-data-lake-642948445774")
+S3_BUCKET = env("SWEDISH_MORTGAGES_S3_BUCKET", "example-data-lake")
 S3_PREFIX = env("SWEDISH_MORTGAGES_SCB_PREFIX", "scb-mortgage-rates")
 S3_REGION = env("AWS_REGION", "eu-north-1")
 ATHENA_DB = env("SWEDISH_MORTGAGES_ATHENA_DATABASE", "swedish_finance")
-ATHENA_STAGING = env("SWEDISH_MORTGAGES_SCB_ATHENA_STAGING", "s3://athena-queries-funfun/scb-mortgage-setup/")
+ATHENA_STAGING = env("SWEDISH_MORTGAGES_SCB_ATHENA_STAGING", "s3://example-athena-results/scb-mortgage-setup/")
 BACKFILL_START = env("SWEDISH_MORTGAGES_SCB_BACKFILL_START", "2020-01")
 STATE_FILE = state_file("scb_mortgage_last_run")
 SCB_URL = "https://api.scb.se/OV0104/v1/doris/sv/ssd/FM/FM5001/FM5001C/RantaT04N"
@@ -206,4 +206,3 @@ def main(setup: bool = False) -> None:
 
 if __name__ == "__main__":
     main(setup="--setup" in sys.argv)
-

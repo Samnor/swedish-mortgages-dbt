@@ -5,6 +5,9 @@
 ```bash
 export DBT_PROFILES_DIR=$(pwd)
 export DBT_TARGET=dev
+export DBT_ATHENA_STAGING_DIR="s3://YOUR-QUERY-RESULTS-BUCKET/dbt-results/"
+export DBT_ATHENA_DATA_DIR="s3://YOUR-DATA-BUCKET/dbt/"
+export SWEDISH_MORTGAGES_S3_BUCKET="YOUR-DATA-BUCKET"
 dbt deps
 dbt parse
 dbt source freshness --select source:swedish_finance
@@ -22,6 +25,7 @@ python ingestion/bank_rates_scraper.py --setup
 ```
 
 Then install the matching `ops/launchd/*.plist` files if you want local schedules.
+Each plist uses a placeholder absolute path and should be edited before loading.
 
 ## GitHub Workflow
 
@@ -39,4 +43,3 @@ Then install the matching `ops/launchd/*.plist` files if you want local schedule
 3. Configure production to point at service-account warehouse credentials.
 4. Mark production as the final source of truth.
 5. Enable Catalog updates from production runs.
-

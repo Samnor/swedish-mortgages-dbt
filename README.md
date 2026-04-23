@@ -2,6 +2,11 @@
 
 Standalone dbt project and ingestion repo for Swedish mortgage-rate analysis.
 
+This repository is intentionally structured so it can be published publicly.
+Account-specific infrastructure values are injected through environment
+variables, and any path-like examples in the repo are templates that should be
+replaced in your own environment.
+
 This repo exists for two reasons:
 
 1. Keep the Swedish mortgage work separate from the old mixed `dbt_athena` project.
@@ -29,7 +34,15 @@ This repo exists for two reasons:
 1. Create a virtualenv and install dependencies.
 2. Export `DBT_PROFILES_DIR=$(pwd)`.
 3. Set `DBT_TARGET=dev`.
-4. Run:
+4. Set infrastructure environment variables for your own account, such as:
+
+```bash
+export DBT_ATHENA_STAGING_DIR="s3://YOUR-QUERY-RESULTS-BUCKET/dbt-results/"
+export DBT_ATHENA_DATA_DIR="s3://YOUR-DATA-BUCKET/dbt/"
+export SWEDISH_MORTGAGES_S3_BUCKET="YOUR-DATA-BUCKET"
+```
+
+5. Run:
 
 ```bash
 python3 -m venv .venv
@@ -51,6 +64,9 @@ This repo is scaffolded for:
 
 The `profiles.yml` uses environment variables so the same repo can back local development, GitHub validation, and production deployment jobs without branching the SQL.
 
+Infrastructure defaults in the repo are intentionally non-production placeholders.
+Replace them with your own S3, Athena, AWS, and dbt Cloud settings before real use.
+
 ## dbt Cloud Design
 
 Recommended dbt Cloud setup:
@@ -63,4 +79,3 @@ Recommended dbt Cloud setup:
   service-account credentials, stable production schema, merge-triggered jobs
 
 See `docs/environments.md` and `docs/runbook.md`.
-

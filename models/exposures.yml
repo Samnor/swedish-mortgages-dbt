@@ -14,5 +14,5 @@ exposures:
       - ref('bank_margin_analysis')
       - ref('bank_vs_market_analysis')
     owner:
-      name: Samuel Norling
-      email: samuel.norling@yellowelk.se
+      name: Swedish Mortgages Maintainer
+      email: opensource-maintainers@example.com

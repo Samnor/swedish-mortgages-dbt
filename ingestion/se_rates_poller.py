@@ -22,11 +22,11 @@ logging.basicConfig(
 )
 log = logging.getLogger(__name__)
 
-S3_BUCKET = env("SWEDISH_MORTGAGES_S3_BUCKET", "dbt-data-lake-642948445774")
+S3_BUCKET = env("SWEDISH_MORTGAGES_S3_BUCKET", "example-data-lake")
 S3_PREFIX = env("SWEDISH_MORTGAGES_SE_RATES_PREFIX", "se-rates")
 S3_REGION = env("AWS_REGION", "eu-north-1")
 ATHENA_DB = env("SWEDISH_MORTGAGES_ATHENA_DATABASE", "swedish_finance")
-ATHENA_STAGING = env("SWEDISH_MORTGAGES_SE_RATES_ATHENA_STAGING", "s3://athena-queries-funfun/se-rates-setup/")
+ATHENA_STAGING = env("SWEDISH_MORTGAGES_SE_RATES_ATHENA_STAGING", "s3://example-athena-results/se-rates-setup/")
 BACKFILL_START = env("SWEDISH_MORTGAGES_SE_RATES_BACKFILL_START", "2020-01-01")
 STATE_FILE = state_file("se_rates_last_run")
 BASE_URL = "https://api.riksbank.se/swea/v1"
@@ -150,4 +150,3 @@ def main(setup: bool = False) -> None:
 
 if __name__ == "__main__":
     main(setup="--setup" in sys.argv)
-

@@ -8,7 +8,7 @@
     <key>ProgramArguments</key>
     <array>
         <string>/usr/bin/python3</string>
-        <string>/Volumes/ExternalSSD/dataengineering/swedish-mortgages-dbt/ingestion/bank_rates_scraper.py</string>
+        <string>/ABSOLUTE/PATH/TO/swedish-mortgages-dbt/ingestion/bank_rates_scraper.py</string>
     </array>
 
     <key>StartCalendarInterval</key>
@@ -29,4 +29,3 @@
     <false/>
 </dict>
 </plist>
-

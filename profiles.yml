@@ -4,8 +4,8 @@ swedish_mortgages:
     dev:
       type: athena
       region_name: "{{ env_var('AWS_REGION', 'eu-north-1') }}"
-      s3_staging_dir: "{{ env_var('DBT_ATHENA_STAGING_DIR', 's3://athena-queries-funfun/dbt-results/') }}"
-      s3_data_dir: "{{ env_var('DBT_ATHENA_DATA_DIR', 's3://dbt-data-lake-642948445774/dbt/') }}"
+      s3_staging_dir: "{{ env_var('DBT_ATHENA_STAGING_DIR', 's3://example-athena-results/dbt-results/') }}"
+      s3_data_dir: "{{ env_var('DBT_ATHENA_DATA_DIR', 's3://example-data-lake/dbt/') }}"
       database: "{{ env_var('DBT_ATHENA_DATABASE', 'awsdatacatalog') }}"
       schema: "{{ env_var('DBT_DEV_SCHEMA', 'swedish_mortgages_dev') }}"
       aws_profile_name: "{{ env_var('AWS_PROFILE', 'default') }}"
@@ -13,8 +13,8 @@ swedish_mortgages:
     ci:
       type: athena
       region_name: "{{ env_var('AWS_REGION', 'eu-north-1') }}"
-      s3_staging_dir: "{{ env_var('DBT_ATHENA_STAGING_DIR', 's3://athena-queries-funfun/dbt-results/') }}"
-      s3_data_dir: "{{ env_var('DBT_ATHENA_DATA_DIR', 's3://dbt-data-lake-642948445774/dbt/') }}"
+      s3_staging_dir: "{{ env_var('DBT_ATHENA_STAGING_DIR', 's3://example-athena-results/dbt-results/') }}"
+      s3_data_dir: "{{ env_var('DBT_ATHENA_DATA_DIR', 's3://example-data-lake/dbt/') }}"
       database: "{{ env_var('DBT_ATHENA_DATABASE', 'awsdatacatalog') }}"
       schema: "swedish_mortgages_ci_{{ env_var('GITHUB_RUN_ID', env_var('CI_RUN_ID', 'local')) }}"
       aws_profile_name: "{{ env_var('AWS_PROFILE', 'default') }}"
@@ -22,10 +22,9 @@ swedish_mortgages:
     prod:
       type: athena
       region_name: "{{ env_var('AWS_REGION', 'eu-north-1') }}"
-      s3_staging_dir: "{{ env_var('DBT_ATHENA_STAGING_DIR', 's3://athena-queries-funfun/dbt-results/') }}"
-      s3_data_dir: "{{ env_var('DBT_ATHENA_DATA_DIR', 's3://dbt-data-lake-642948445774/dbt/') }}"
+      s3_staging_dir: "{{ env_var('DBT_ATHENA_STAGING_DIR', 's3://example-athena-results/dbt-results/') }}"
+      s3_data_dir: "{{ env_var('DBT_ATHENA_DATA_DIR', 's3://example-data-lake/dbt/') }}"
       database: "{{ env_var('DBT_ATHENA_DATABASE', 'awsdatacatalog') }}"
       schema: "{{ env_var('DBT_PROD_SCHEMA', 'swedish_mortgages_prod') }}"
       aws_profile_name: "{{ env_var('AWS_PROFILE', 'default') }}"
       threads: "{{ env_var('DBT_THREADS', '8') | int }}"
-
