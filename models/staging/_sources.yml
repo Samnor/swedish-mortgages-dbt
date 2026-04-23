@@ -1,0 +1,77 @@
+version: 2
+
+sources:
+  - name: swedish_finance
+    database: "{{ env_var('DBT_ATHENA_DATABASE', 'awsdatacatalog') }}"
+    schema: "{{ env_var('SWEDISH_FINANCE_RAW_SCHEMA', 'swedish_finance') }}"
+    tables:
+      - name: se_rates_raw
+        description: >
+          Daily interest-rate and bond-yield observations from the Riksbanken
+          SWEA API. One row per series per trading day.
+        loaded_at_field: "CAST(from_iso8601_date(rate_date) AS timestamp)"
+        freshness:
+          warn_after: {count: 2, period: day}
+          error_after: {count: 4, period: day}
+        columns:
+          - name: rate_date
+            description: ISO-8601 date of the observation.
+          - name: series_id
+            description: Riksbank SWEA series identifier.
+          - name: series_name
+            description: Human-readable series name.
+          - name: category
+            description: Rate family for the series.
+          - name: value
+            description: Rate value in percent.
+
+      - name: bank_listed_rates_raw
+        description: >
+          Daily scraped listed mortgage rates from SBAB, Nordea, and Swedbank.
+          Swedbank records may also include actual average rates.
+        loaded_at_field: "from_iso8601_timestamp(scraped_at)"
+        freshness:
+          warn_after: {count: 1, period: day}
+          error_after: {count: 2, period: day}
+        columns:
+          - name: bank
+            description: Bank name.
+          - name: period_label
+            description: Fixing period label.
+          - name: period_years
+            description: Fixing period as years.
+          - name: list_rate
+            description: Published listed rate in percent.
+          - name: avg_rate
+            description: Actual average rate in percent when available.
+          - name: valid_from
+            description: Effective date string from the source site.
+          - name: scraped_at
+            description: ISO-8601 UTC scrape timestamp.
+          - name: source
+            description: Scraper source identifier.
+
+      - name: scb_mortgage_rates_raw
+        description: >
+          Monthly MFI average mortgage rates from Statistics Sweden table
+          RantaT04N covering new and outstanding loans by fixing period.
+        loaded_at_field: "from_iso8601_timestamp(scraped_at)"
+        freshness:
+          warn_after: {count: 35, period: day}
+          error_after: {count: 60, period: day}
+        columns:
+          - name: period_month
+            description: Observation month in YYYY-MM format.
+          - name: loan_type
+            description: Loan type code.
+          - name: loan_type_name
+            description: Human-readable loan type label.
+          - name: period_code
+            description: SCB binding-time code.
+          - name: period_label
+            description: Simplified fixing-period label.
+          - name: rate
+            description: Average mortgage rate in percent.
+          - name: scraped_at
+            description: ISO-8601 UTC fetch timestamp.
+

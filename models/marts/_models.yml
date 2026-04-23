@@ -1,0 +1,55 @@
+version: 2
+
+models:
+  - name: rates_daily
+    description: >
+      Wide-format daily rates with one row per date and covered-bond spreads
+      over equivalent government bonds.
+    columns:
+      - name: rate_date
+        description: Calendar date.
+        tests:
+          - not_null
+      - name: spread_2y
+        description: 2Y covered-bond yield minus 2Y government-bond yield.
+      - name: spread_5y
+        description: 5Y covered-bond yield minus 5Y government-bond yield.
+
+  - name: bank_margin_analysis
+    description: >
+      Latest listed bank rates with estimated gross margins over Riksbank
+      funding-cost proxies.
+    columns:
+      - name: bank
+        description: Bank name.
+        tests:
+          - not_null
+      - name: period_label
+        description: Sortable period label.
+        tests:
+          - not_null
+      - name: list_rate
+        description: Latest published listed rate in percent.
+      - name: funding_cost
+        description: Funding-cost proxy in percent.
+      - name: gross_margin
+        description: Estimated gross margin in percentage points.
+
+  - name: bank_vs_market_analysis
+    description: >
+      Listed bank rates versus SCB market-average rates and Riksbank proxy
+      funding costs.
+    columns:
+      - name: bank
+        description: Bank name.
+        tests:
+          - not_null
+      - name: period_label
+        description: Sortable period label.
+        tests:
+          - not_null
+      - name: scb_new_loan_rate
+        description: SCB average rate for new loans in the mapped bucket.
+      - name: effective_margin_new
+        description: Estimated effective margin using the SCB new-loan rate.
+

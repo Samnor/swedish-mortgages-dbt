@@ -1,0 +1,80 @@
+version: 2
+
+models:
+  - name: stg_se_rates
+    description: >
+      Staged Swedish interest rates and bond yields from the Riksbanken SWEA
+      API. One row per series per trading day after type cleanup and
+      deduplication.
+    columns:
+      - name: rate_date
+        description: Calendar date of the observation.
+        tests:
+          - not_null
+      - name: series_id
+        description: Riksbank SWEA series identifier.
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['SECBREPOEFF', 'SECBDEPOEFF', 'SECBLENDEFF', 'SEDP3MSTIBORDELAYC', 'SETB3MBENCH', 'SEGVB2YC', 'SEGVB5YC', 'SEGVB10YC', 'SEMB2YCACOMB', 'SEMB5YCACOMB']
+      - name: category
+        description: Rate category group.
+        tests:
+          - not_null
+      - name: value
+        description: Rate value in percent.
+        tests:
+          - not_null
+
+  - name: stg_bank_listed_rates
+    description: >
+      Staged daily listed mortgage rates from SBAB, Nordea, and Swedbank with
+      one row per bank, period, and scrape date.
+    columns:
+      - name: scrape_date
+        description: Date on which the rates were scraped.
+        tests:
+          - not_null
+      - name: bank
+        description: Bank name.
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['SBAB', 'Nordea', 'Swedbank']
+      - name: period_label
+        description: Fixing period label.
+        tests:
+          - not_null
+      - name: list_rate
+        description: Published listed rate in percent.
+        tests:
+          - not_null
+
+  - name: stg_scb_mortgage_rates
+    description: >
+      Staged monthly SCB MFI average mortgage rates with one row per loan type,
+      fixing period, and observation month.
+    columns:
+      - name: period_month
+        description: Year-month of the observation.
+        tests:
+          - not_null
+      - name: period_date
+        description: First day of the observation month.
+        tests:
+          - not_null
+      - name: loan_type
+        description: Loan type code.
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['0100', '0200']
+      - name: period_label
+        description: Simplified fixing period label.
+        tests:
+          - not_null
+      - name: rate
+        description: Average MFI mortgage rate in percent.
+        tests:
+          - not_null
+

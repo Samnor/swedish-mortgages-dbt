@@ -1,0 +1,60 @@
+name: dbt Cloud Jobs
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      job_type:
+        description: Job type to trigger
+        required: true
+        default: prod
+        type: choice
+        options:
+          - ci
+          - prod
+
+jobs:
+  trigger:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Resolve job ID
+        id: resolve
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          MANUAL_JOB_TYPE: ${{ inputs.job_type }}
+          DBT_CLOUD_CI_JOB_ID: ${{ vars.DBT_CLOUD_CI_JOB_ID }}
+          DBT_CLOUD_PROD_JOB_ID: ${{ vars.DBT_CLOUD_PROD_JOB_ID }}
+        run: |
+          if [ "$EVENT_NAME" = "pull_request" ]; then
+            echo "job_id=$DBT_CLOUD_CI_JOB_ID" >> "$GITHUB_OUTPUT"
+          elif [ "$EVENT_NAME" = "push" ]; then
+            echo "job_id=$DBT_CLOUD_PROD_JOB_ID" >> "$GITHUB_OUTPUT"
+          elif [ "$MANUAL_JOB_TYPE" = "ci" ]; then
+            echo "job_id=$DBT_CLOUD_CI_JOB_ID" >> "$GITHUB_OUTPUT"
+          else
+            echo "job_id=$DBT_CLOUD_PROD_JOB_ID" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Trigger dbt Cloud job
+        if: ${{ secrets.DBT_CLOUD_API_TOKEN != '' && vars.DBT_CLOUD_ACCOUNT_ID != '' && steps.resolve.outputs.job_id != '' }}
+        env:
+          DBT_CLOUD_API_TOKEN: ${{ secrets.DBT_CLOUD_API_TOKEN }}
+          DBT_CLOUD_ACCOUNT_ID: ${{ vars.DBT_CLOUD_ACCOUNT_ID }}
+          DBT_CLOUD_JOB_ID: ${{ steps.resolve.outputs.job_id }}
+        run: |
+          curl --fail --silent --show-error \
+            --request POST \
+            --url "https://cloud.getdbt.com/api/v2/accounts/${DBT_CLOUD_ACCOUNT_ID}/jobs/${DBT_CLOUD_JOB_ID}/run/" \
+            --header "Authorization: Token ${DBT_CLOUD_API_TOKEN}" \
+            --header "Content-Type: application/json" \
+            --data '{"cause":"Triggered from GitHub Actions"}'
+
+      - name: Explain skipped trigger
+        if: ${{ !(secrets.DBT_CLOUD_API_TOKEN != '' && vars.DBT_CLOUD_ACCOUNT_ID != '' && steps.resolve.outputs.job_id != '') }}
+        run: |
+          echo "Skipping dbt Cloud trigger."
+          echo "Set GitHub secret DBT_CLOUD_API_TOKEN and repository variables DBT_CLOUD_ACCOUNT_ID, DBT_CLOUD_CI_JOB_ID, DBT_CLOUD_PROD_JOB_ID."

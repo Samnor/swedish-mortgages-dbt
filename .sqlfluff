@@ -1,0 +1,8 @@
+[sqlfluff]
+dialect = athena
+templater = dbt
+exclude_rules = AL01,AM03,LT02,LT05,LT12,RF04,ST06
+
+[sqlfluff:templater:dbt]
+project_dir = .
+profiles_dir = .

@@ -1,0 +1,18 @@
+version: 2
+
+exposures:
+  - name: swedish_mortgage_dashboard
+    label: Swedish Mortgage Dashboard
+    type: dashboard
+    maturity: medium
+    url: https://superset.example.com/dashboard/swedish-mortgages
+    description: >
+      Superset dashboard for Swedish mortgage rates, funding-cost proxies,
+      bank listed-rate spreads, and market-average comparisons.
+    depends_on:
+      - ref('rates_daily')
+      - ref('bank_margin_analysis')
+      - ref('bank_vs_market_analysis')
+    owner:
+      name: Samuel Norling
+      email: samuel.norling@yellowelk.se
