@@ -39,22 +39,21 @@ jobs:
             echo "job_id=$DBT_CLOUD_PROD_JOB_ID" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Trigger dbt Cloud job
-        if: ${{ secrets.DBT_CLOUD_API_TOKEN != '' && vars.DBT_CLOUD_ACCOUNT_ID != '' && steps.resolve.outputs.job_id != '' }}
+      - name: Trigger or explain skipped dbt Cloud job
         env:
           DBT_CLOUD_API_TOKEN: ${{ secrets.DBT_CLOUD_API_TOKEN }}
           DBT_CLOUD_ACCOUNT_ID: ${{ vars.DBT_CLOUD_ACCOUNT_ID }}
           DBT_CLOUD_JOB_ID: ${{ steps.resolve.outputs.job_id }}
         run: |
+          if [ -z "$DBT_CLOUD_API_TOKEN" ] || [ -z "$DBT_CLOUD_ACCOUNT_ID" ] || [ -z "$DBT_CLOUD_JOB_ID" ]; then
+            echo "Skipping dbt Cloud trigger."
+            echo "Set GitHub secret DBT_CLOUD_API_TOKEN and repository variables DBT_CLOUD_ACCOUNT_ID, DBT_CLOUD_CI_JOB_ID, DBT_CLOUD_PROD_JOB_ID."
+            exit 0
+          fi
+
           curl --fail --silent --show-error \
             --request POST \
             --url "https://cloud.getdbt.com/api/v2/accounts/${DBT_CLOUD_ACCOUNT_ID}/jobs/${DBT_CLOUD_JOB_ID}/run/" \
             --header "Authorization: Token ${DBT_CLOUD_API_TOKEN}" \
             --header "Content-Type: application/json" \
             --data '{"cause":"Triggered from GitHub Actions"}'
-
-      - name: Explain skipped trigger
-        if: ${{ !(secrets.DBT_CLOUD_API_TOKEN != '' && vars.DBT_CLOUD_ACCOUNT_ID != '' && steps.resolve.outputs.job_id != '') }}
-        run: |
-          echo "Skipping dbt Cloud trigger."
-          echo "Set GitHub secret DBT_CLOUD_API_TOKEN and repository variables DBT_CLOUD_ACCOUNT_ID, DBT_CLOUD_CI_JOB_ID, DBT_CLOUD_PROD_JOB_ID."

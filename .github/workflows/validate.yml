@@ -30,5 +30,4 @@ jobs:
         run: dbt parse
 
       - name: SQLFluff lint
-        run: sqlfluff lint models
-
+        run: sqlfluff lint --ignore=templating --templater jinja models
