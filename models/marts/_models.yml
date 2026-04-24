@@ -14,11 +14,16 @@ models:
         description: 2Y covered-bond yield minus 2Y government-bond yield.
       - name: spread_5y
         description: 5Y covered-bond yield minus 5Y government-bond yield.
+      - name: stibor_policy_spread_3m
+        description: 3M STIBOR minus the policy rate.
 
   - name: bank_margin_analysis
     description: >
-      Latest listed bank rates with estimated gross margins over Riksbank
-      funding-cost proxies.
+      Latest listed bank rates with estimated gross margins over a stylized
+      Swedish mortgage funding stack. Variable-rate buckets are modeled as
+      longer covered-bond funding swapped into 3M money-market exposure, while
+      fixed buckets use covered-bond curve components with interpolation
+      between 2Y and 5Y where needed.
     columns:
       - name: bank
         description: Bank name.
@@ -30,15 +35,29 @@ models:
           - not_null
       - name: list_rate
         description: Latest published listed rate in percent.
+      - name: funding_model
+        description: Stylized funding structure used for the mortgage bucket.
+      - name: funding_weight_2y
+        description: Weight on the 2Y point when the funding curve is interpolated.
+      - name: funding_weight_5y
+        description: Weight on the 5Y point when the funding curve is interpolated.
+      - name: policy_anchor_component
+        description: Policy-rate anchor used for short mortgages.
+      - name: stibor_market_component
+        description: 3M money-market spread over the policy rate for short mortgages.
+      - name: risk_free_curve_component
+        description: Government-bond curve component for fixed-rate funding.
+      - name: covered_bond_spread_component
+        description: Covered-bond spread component over the risk-free curve.
       - name: funding_cost
-        description: Funding-cost proxy in percent.
+        description: Stylized funding-cost estimate in percent.
       - name: gross_margin
         description: Estimated gross margin in percentage points.
 
   - name: bank_vs_market_analysis
     description: >
-      Listed bank rates versus SCB market-average rates and Riksbank proxy
-      funding costs.
+      Listed bank rates versus SCB market-average rates and the same stylized
+      mortgage funding stack used in the listed-rate margin analysis.
     columns:
       - name: bank
         description: Bank name.
@@ -52,4 +71,3 @@ models:
         description: SCB average rate for new loans in the mapped bucket.
       - name: effective_margin_new
         description: Estimated effective margin using the SCB new-loan rate.
-

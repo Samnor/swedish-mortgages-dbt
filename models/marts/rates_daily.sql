@@ -35,8 +35,8 @@ select
     govbond_10y,
     mortbond_2y,
     mortbond_5y,
+    round(stibor_3m - policy_rate, 4) as stibor_policy_spread_3m,
     round(mortbond_2y - govbond_2y, 4) as spread_2y,
     round(mortbond_5y - govbond_5y, 4) as spread_5y
 from pivoted
 order by rate_date desc
-
