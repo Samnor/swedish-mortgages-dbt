@@ -30,6 +30,7 @@ ATHENA_STAGING = env("SWEDISH_MORTGAGES_SE_RATES_ATHENA_STAGING", "s3://example-
 BACKFILL_START = env("SWEDISH_MORTGAGES_SE_RATES_BACKFILL_START", "2020-01-01")
 STATE_FILE = state_file("se_rates_last_run")
 BASE_URL = "https://api.riksbank.se/swea/v1"
+SWESTR_BASE_URL = "https://api.riksbank.se/swestr/v1"
 REQUEST_DELAY = 2.2
 MAX_RETRIES = 4
 
@@ -44,6 +45,10 @@ SERIES: dict[str, dict[str, str]] = {
     "SEGVB10YC": {"name": "Govt bond 10Y", "category": "government_bond"},
     "SEMB2YCACOMB": {"name": "Covered bond 2Y", "category": "covered_bond"},
     "SEMB5YCACOMB": {"name": "Covered bond 5Y", "category": "covered_bond"},
+}
+
+SWESTR_AVERAGES: dict[str, dict[str, str]] = {
+    "SWESTRAVG3M": {"name": "SWESTR 3M compounded average", "category": "money_market"},
 }
 
 ATHENA_DDL = f"""
@@ -92,6 +97,11 @@ def fetch_observations(series_id: str, from_date: str, to_date: str) -> list[dic
     return result if isinstance(result, list) else []
 
 
+def fetch_swestr_average(series_id: str, from_date: str, to_date: str) -> list[dict]:
+    result = _get(f"{SWESTR_BASE_URL}/avg/{series_id}?fromDate={from_date}&toDate={to_date}")
+    return result if isinstance(result, list) else []
+
+
 def get_from_date() -> str:
     if STATE_FILE.exists():
         return STATE_FILE.read_text().strip()
@@ -126,9 +136,14 @@ def main(setup: bool = False) -> None:
         all_obs[series_id] = fetch_observations(series_id, from_date, to_date)
         time.sleep(REQUEST_DELAY)
 
+    for series_id, meta in SWESTR_AVERAGES.items():
+        log.info("Fetching %s (%s)", series_id, meta["name"])
+        all_obs[series_id] = fetch_swestr_average(series_id, from_date, to_date)
+        time.sleep(REQUEST_DELAY)
+
     by_date: dict[str, list[dict]] = {}
     for series_id, obs_list in all_obs.items():
-        meta = SERIES[series_id]
+        meta = SERIES.get(series_id) or SWESTR_AVERAGES[series_id]
         for obs in obs_list:
             day = obs["date"]
             by_date.setdefault(day, []).append(
@@ -137,7 +152,7 @@ def main(setup: bool = False) -> None:
                     "series_id": series_id,
                     "series_name": meta["name"],
                     "category": meta["category"],
-                    "value": obs["value"],
+                    "value": obs.get("value", obs.get("rate")),
                 }
             )
 

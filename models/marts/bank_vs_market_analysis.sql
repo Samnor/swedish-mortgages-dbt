@@ -13,6 +13,7 @@ with latest_market as (
         mortbond_2y,
         mortbond_5y,
         stibor_policy_spread_3m,
+        swestr_policy_spread_3m,
         spread_2y,
         spread_5y
     from {{ ref('rates_daily') }}
@@ -22,6 +23,7 @@ with latest_market as (
         where policy_rate is not null
           and govbond_2y is not null
           and govbond_5y is not null
+          and swestr_policy_spread_3m is not null
           and spread_2y is not null
           and spread_5y is not null
     )
@@ -81,9 +83,9 @@ funding_components as (
             else cast(0.0 as double)
         end as policy_anchor_component,
         case
-            when l.period_years <= 1.0 then coalesce(m.stibor_policy_spread_3m, cast(0.0 as double))
+            when l.period_years <= 1.0 then coalesce(m.swestr_policy_spread_3m, cast(0.0 as double))
             else cast(0.0 as double)
-        end as stibor_market_component,
+        end as short_rate_spread_component,
         case
             when l.period_years <= 1.0 then cast(0.0 as double)
             when l.period_years <= 2.0 then m.govbond_2y
@@ -140,25 +142,25 @@ select
     f.funding_weight_2y,
     f.funding_weight_5y,
     f.policy_anchor_component,
-    f.stibor_market_component,
+    f.short_rate_spread_component,
     f.risk_free_curve_component,
     f.covered_bond_spread_component,
     round(
         f.policy_anchor_component
-        + f.stibor_market_component
+        + f.short_rate_spread_component
         + f.risk_free_curve_component
         + f.covered_bond_spread_component,
         4
     ) as funding_cost,
     case
-        when f.period_years <= 1.0 then 'policy_rate + (stibor_3m - policy_rate) + spread_5y'
+        when f.period_years <= 1.0 then 'policy_rate + (swestr_3m_avg - policy_rate) + spread_5y'
         when f.period_years < 5.0 then 'blended govt curve + blended covered spread (2Y to 5Y)'
         else 'govbond_5y + spread_5y'
     end as funding_cost_source,
     round(
         f.list_rate - (
             f.policy_anchor_component
-            + f.stibor_market_component
+            + f.short_rate_spread_component
             + f.risk_free_curve_component
             + f.covered_bond_spread_component
         ),
@@ -167,7 +169,7 @@ select
     round(
         s.new_loan_rate - (
             f.policy_anchor_component
-            + f.stibor_market_component
+            + f.short_rate_spread_component
             + f.risk_free_curve_component
             + f.covered_bond_spread_component
         ),

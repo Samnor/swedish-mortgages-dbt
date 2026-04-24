@@ -16,7 +16,7 @@ models:
         tests:
           - not_null
           - accepted_values:
-              values: ['SECBREPOEFF', 'SECBDEPOEFF', 'SECBLENDEFF', 'SEDP3MSTIBORDELAYC', 'SETB3MBENCH', 'SEGVB2YC', 'SEGVB5YC', 'SEGVB10YC', 'SEMB2YCACOMB', 'SEMB5YCACOMB']
+              values: ['SECBREPOEFF', 'SECBDEPOEFF', 'SECBLENDEFF', 'SEDP3MSTIBORDELAYC', 'SETB3MBENCH', 'SEGVB2YC', 'SEGVB5YC', 'SEGVB10YC', 'SEMB2YCACOMB', 'SEMB5YCACOMB', 'SWESTRAVG3M']
       - name: category
         description: Rate category group.
         tests:
@@ -77,4 +77,3 @@ models:
         description: Average MFI mortgage rate in percent.
         tests:
           - not_null
-

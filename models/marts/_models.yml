@@ -16,6 +16,8 @@ models:
         description: 5Y covered-bond yield minus 5Y government-bond yield.
       - name: stibor_policy_spread_3m
         description: 3M STIBOR minus the policy rate.
+      - name: swestr_policy_spread_3m
+        description: 3M compounded SWESTR average minus the policy rate.
 
   - name: bank_margin_analysis
     description: >
@@ -43,8 +45,8 @@ models:
         description: Weight on the 5Y point when the funding curve is interpolated.
       - name: policy_anchor_component
         description: Policy-rate anchor used for short mortgages.
-      - name: stibor_market_component
-        description: 3M money-market spread over the policy rate for short mortgages.
+      - name: short_rate_spread_component
+        description: 3M compounded SWESTR spread over the policy rate for short mortgages.
       - name: risk_free_curve_component
         description: Government-bond curve component for fixed-rate funding.
       - name: covered_bond_spread_component
