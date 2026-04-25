@@ -1,0 +1,37 @@
+version: 2
+
+models:
+  - name: int_latest_bank_listed_rates
+    description: >
+      Latest listed mortgage rate per bank and fixing period, with freshness
+      metadata. This model prevents one lagging scraper from removing other
+      banks from downstream comparison marts.
+    columns:
+      - name: bank
+        tests:
+          - not_null
+      - name: period_label
+        tests:
+          - not_null
+      - name: listed_rate_freshness
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['fresh', 'aging', 'stale']
+
+  - name: int_latest_scb_mortgage_rates
+    description: >
+      Latest SCB MFI average mortgage rate per loan type and fixing-period
+      bucket, with freshness metadata.
+    columns:
+      - name: loan_type
+        tests:
+          - not_null
+      - name: period_label
+        tests:
+          - not_null
+      - name: scb_rate_freshness
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['fresh', 'aging', 'stale']

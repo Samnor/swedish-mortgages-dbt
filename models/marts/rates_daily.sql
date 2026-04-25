@@ -18,7 +18,8 @@ pivoted as (
         max(case when series_id = 'SEGVB5YC' then value end) as govbond_5y,
         max(case when series_id = 'SEGVB10YC' then value end) as govbond_10y,
         max(case when series_id = 'SEMB2YCACOMB' then value end) as mortbond_2y,
-        max(case when series_id = 'SEMB5YCACOMB' then value end) as mortbond_5y
+        max(case when series_id = 'SEMB5YCACOMB' then value end) as mortbond_5y,
+        max(case when series_id = 'SWESTRAVG3M' then value end) as swestr_3m_avg
     from base
     group by rate_date
 )
@@ -35,8 +36,10 @@ select
     govbond_10y,
     mortbond_2y,
     mortbond_5y,
+    swestr_3m_avg,
+    round(stibor_3m - policy_rate, 4) as stibor_policy_spread_3m,
+    round(swestr_3m_avg - policy_rate, 4) as swestr_policy_spread_3m,
     round(mortbond_2y - govbond_2y, 4) as spread_2y,
     round(mortbond_5y - govbond_5y, 4) as spread_5y
 from pivoted
 order by rate_date desc
-

@@ -11,6 +11,7 @@ import re
 import sys
 import time
 from datetime import date, datetime, timezone
+from collections.abc import Callable
 
 import requests
 from bs4 import BeautifulSoup
@@ -34,6 +35,11 @@ USER_AGENT = env(
     "SWEDISH_MORTGAGES_USER_AGENT",
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Chrome/124 Safari/537.36",
 )
+REQUIRED_BANKS = {
+    bank.strip()
+    for bank in env("SWEDISH_MORTGAGES_REQUIRED_BANKS", "SBAB,Nordea,Swedbank").split(",")
+    if bank.strip()
+}
 
 ATHENA_DDL = f"""
 CREATE DATABASE IF NOT EXISTS {ATHENA_DB};
@@ -248,16 +254,37 @@ def main(setup: bool = False) -> None:
         log.info("Already ran today")
         return
 
+    scrapers: tuple[Callable[[str], list[dict]], ...] = (
+        scrape_sbab,
+        scrape_nordea,
+        scrape_swedbank,
+    )
     all_records: list[dict] = []
-    for scraper in (scrape_sbab, scrape_nordea, scrape_swedbank):
+    failed_scrapers: list[str] = []
+    banks_with_records: set[str] = set()
+
+    for scraper in scrapers:
         try:
-            all_records.extend(scraper(scraped_at))
+            records = scraper(scraped_at)
+            if not records:
+                failed_scrapers.append(scraper.__name__)
+            all_records.extend(records)
+            banks_with_records.update(record["bank"] for record in records)
         except Exception as exc:
             log.error("%s failed: %s", scraper.__name__, exc)
+            failed_scrapers.append(scraper.__name__)
         time.sleep(1)
 
     if not all_records:
         raise SystemExit("No records scraped")
+
+    missing_required_banks = sorted(REQUIRED_BANKS - banks_with_records)
+    if missing_required_banks:
+        raise SystemExit(
+            "Missing required bank records: "
+            + ", ".join(missing_required_banks)
+            + f". Failed or empty scrapers: {', '.join(failed_scrapers) or 'none'}"
+        )
 
     upload_records(today, all_records)
     STATE_FILE.write_text(today)

@@ -5,5 +5,6 @@ __pycache__/
 dbt_packages/
 target/
 logs/
+.state/
 .env
 .user.yml

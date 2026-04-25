@@ -1,0 +1,192 @@
+{
+  "$schema": "./mortgage_haggle_state_machine.schema.json",
+  "id": "mortgage_haggle",
+  "version": 1,
+  "description": "State-machine contract for a webapp that helps a Swedish mortgage borrower prepare and execute a rate negotiation.",
+  "initial": "property_profile",
+  "terminal": ["outcome_logged"],
+  "context_schema": {
+    "property_price": {
+      "type": "number",
+      "description": "Estimated property value or accepted purchase price.",
+      "unit": "SEK",
+      "sensitive": true
+    },
+    "down_payment": {
+      "type": "number",
+      "description": "Cash contribution from the borrower.",
+      "unit": "SEK",
+      "sensitive": true
+    },
+    "loan_amount": {
+      "type": "number",
+      "description": "Requested or existing mortgage principal.",
+      "unit": "SEK",
+      "sensitive": true
+    },
+    "binding_period": {
+      "type": "string",
+      "description": "Mortgage fixing period the borrower wants to compare.",
+      "enum": ["3M", "1Y", "2Y", "3Y", "4Y", "5Y", "7Y", "10Y"]
+    },
+    "current_bank": {
+      "type": "string",
+      "description": "Bank that gave the current offer or holds the current mortgage."
+    },
+    "current_rate": {
+      "type": "number",
+      "description": "Borrower's current offered or existing mortgage rate.",
+      "unit": "percent"
+    },
+    "target_bank": {
+      "type": "string",
+      "description": "Bank selected for negotiation."
+    },
+    "target_rate": {
+      "type": "number",
+      "description": "Rate the borrower should ask for.",
+      "unit": "percent"
+    },
+    "negotiation_outcome": {
+      "type": "string",
+      "description": "Outcome category after the negotiation.",
+      "enum": ["accepted", "countered", "rejected", "follow_up_needed"]
+    }
+  },
+  "data_products": {
+    "market_rate_context": {
+      "owner": "dbt",
+      "relation": "rates_daily",
+      "description": "Daily policy, government-bond, covered-bond, and spread context.",
+      "freshness_field": "rate_date"
+    },
+    "bank_offer_comparison": {
+      "owner": "dbt",
+      "relation": "bank_vs_market_analysis",
+      "description": "Latest listed bank rates compared with SCB market averages and estimated funding cost.",
+      "freshness_field": "funding_date"
+    },
+    "bank_margin_context": {
+      "owner": "dbt",
+      "relation": "bank_margin_analysis",
+      "description": "Latest listed rates with estimated funding cost and gross margin by bank and fixing period.",
+      "freshness_field": "scrape_date"
+    },
+    "payment_scenarios": {
+      "owner": "webapp",
+      "relation": "computed_from_context",
+      "description": "Monthly payment and annual savings scenarios derived from borrower input and target rates."
+    },
+    "haggle_talking_points": {
+      "owner": "webapp",
+      "relation": "computed_from_context_and_dbt_marts",
+      "description": "Negotiation arguments generated from bank margin, market-average discount, and payment impact."
+    }
+  },
+  "states": {
+    "property_profile": {
+      "label": "Property Profile",
+      "component": "PropertyProfileStep",
+      "purpose": "Collect property price and down payment so the app can calculate loan-to-value and principal.",
+      "writes_context": ["property_price", "down_payment"],
+      "analytics_event": "mortgage_haggle_property_profile_viewed",
+      "transitions": [
+        {"event": "continue", "target": "loan_profile", "label": "Continue"}
+      ]
+    },
+    "loan_profile": {
+      "label": "Loan Profile",
+      "component": "LoanProfileStep",
+      "purpose": "Collect loan amount and preferred binding period.",
+      "requires_context": ["property_price", "down_payment"],
+      "writes_context": ["loan_amount", "binding_period"],
+      "guards": ["loan_amount_lte_property_price"],
+      "analytics_event": "mortgage_haggle_loan_profile_viewed",
+      "transitions": [
+        {"event": "back", "target": "property_profile", "label": "Back"},
+        {"event": "continue", "target": "current_offer", "label": "Continue", "guard": "loan_profile_complete"}
+      ]
+    },
+    "current_offer": {
+      "label": "Current Offer",
+      "component": "CurrentOfferStep",
+      "purpose": "Capture the current bank and offered rate so the app can quantify negotiation room.",
+      "requires_context": ["loan_amount", "binding_period"],
+      "writes_context": ["current_bank", "current_rate"],
+      "analytics_event": "mortgage_haggle_current_offer_viewed",
+      "transitions": [
+        {"event": "back", "target": "loan_profile", "label": "Back"},
+        {"event": "continue", "target": "market_context", "label": "Analyze", "guard": "current_offer_complete"}
+      ]
+    },
+    "market_context": {
+      "label": "Market Context",
+      "component": "MarketContextStep",
+      "purpose": "Show the rate environment that explains where bank pricing should be anchored.",
+      "requires_context": ["binding_period"],
+      "data": ["market_rate_context", "bank_margin_context"],
+      "analytics_event": "mortgage_haggle_market_context_viewed",
+      "transitions": [
+        {"event": "back", "target": "current_offer", "label": "Back"},
+        {"event": "continue", "target": "bank_comparison", "label": "Compare banks"}
+      ]
+    },
+    "bank_comparison": {
+      "label": "Bank Comparison",
+      "component": "BankComparisonStep",
+      "purpose": "Compare the current offer against listed rates, SCB market averages, and estimated bank margins.",
+      "requires_context": ["current_rate", "binding_period"],
+      "writes_context": ["target_bank", "target_rate"],
+      "data": ["bank_offer_comparison", "bank_margin_context"],
+      "analytics_event": "mortgage_haggle_bank_comparison_viewed",
+      "transitions": [
+        {"event": "back", "target": "market_context", "label": "Back"},
+        {"event": "continue", "target": "payment_impact", "label": "Calculate impact", "guard": "target_rate_selected"}
+      ]
+    },
+    "payment_impact": {
+      "label": "Payment Impact",
+      "component": "PaymentImpactStep",
+      "purpose": "Translate target-rate differences into monthly and annual SEK impact.",
+      "requires_context": ["loan_amount", "current_rate", "target_rate"],
+      "data": ["payment_scenarios"],
+      "analytics_event": "mortgage_haggle_payment_impact_viewed",
+      "transitions": [
+        {"event": "back", "target": "bank_comparison", "label": "Back"},
+        {"event": "continue", "target": "haggle_arguments", "label": "Build arguments"}
+      ]
+    },
+    "haggle_arguments": {
+      "label": "Haggle Arguments",
+      "component": "HaggleArgumentsStep",
+      "purpose": "Create concrete talking points using market data, bank margin estimates, and payment savings.",
+      "requires_context": ["current_bank", "current_rate", "target_bank", "target_rate"],
+      "data": ["bank_offer_comparison", "bank_margin_context", "haggle_talking_points"],
+      "analytics_event": "mortgage_haggle_arguments_viewed",
+      "transitions": [
+        {"event": "back", "target": "payment_impact", "label": "Back"},
+        {"event": "continue", "target": "call_script", "label": "Prepare call"}
+      ]
+    },
+    "call_script": {
+      "label": "Call Script",
+      "component": "CallScriptStep",
+      "purpose": "Present a concise script for contacting the bank and asking for the target rate.",
+      "requires_context": ["current_bank", "target_rate"],
+      "data": ["haggle_talking_points"],
+      "analytics_event": "mortgage_haggle_call_script_viewed",
+      "transitions": [
+        {"event": "back", "target": "haggle_arguments", "label": "Back"},
+        {"event": "log_outcome", "target": "outcome_logged", "label": "Log outcome"}
+      ]
+    },
+    "outcome_logged": {
+      "label": "Outcome Logged",
+      "component": "OutcomeLoggedStep",
+      "purpose": "Capture whether the negotiation worked and preserve the result for follow-up.",
+      "writes_context": ["negotiation_outcome"],
+      "analytics_event": "mortgage_haggle_outcome_logged",
+      "transitions": []
+    }
+  }
+}
