@@ -1,0 +1,126 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/schemas/mortgage_haggle_state_machine.schema.json",
+  "title": "Mortgage Haggle State Machine",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "version", "initial", "states"],
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_-]*$"
+    },
+    "version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "description": {
+      "type": "string"
+    },
+    "initial": {
+      "type": "string"
+    },
+    "terminal": {
+      "type": "array",
+      "items": {"type": "string"},
+      "uniqueItems": true,
+      "default": []
+    },
+    "context_schema": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["type", "description"],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["string", "number", "integer", "boolean", "date"]
+          },
+          "description": {"type": "string"},
+          "sensitive": {"type": "boolean", "default": false},
+          "unit": {"type": "string"},
+          "enum": {
+            "type": "array",
+            "items": {"type": ["string", "number", "integer", "boolean"]},
+            "uniqueItems": true
+          }
+        }
+      }
+    },
+    "data_products": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["owner", "relation", "description"],
+        "properties": {
+          "owner": {
+            "type": "string",
+            "enum": ["dbt", "webapp", "superset"]
+          },
+          "relation": {"type": "string"},
+          "description": {"type": "string"},
+          "freshness_field": {"type": "string"}
+        }
+      }
+    },
+    "states": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["label", "component", "purpose", "transitions"],
+        "properties": {
+          "label": {"type": "string"},
+          "component": {"type": "string"},
+          "purpose": {"type": "string"},
+          "requires_context": {
+            "type": "array",
+            "items": {"type": "string"},
+            "uniqueItems": true,
+            "default": []
+          },
+          "writes_context": {
+            "type": "array",
+            "items": {"type": "string"},
+            "uniqueItems": true,
+            "default": []
+          },
+          "data": {
+            "type": "array",
+            "items": {"type": "string"},
+            "uniqueItems": true,
+            "default": []
+          },
+          "guards": {
+            "type": "array",
+            "items": {"type": "string"},
+            "uniqueItems": true,
+            "default": []
+          },
+          "analytics_event": {"type": "string"},
+          "transitions": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["event", "target"],
+              "properties": {
+                "event": {"type": "string"},
+                "target": {"type": "string"},
+                "label": {"type": "string"},
+                "guard": {"type": "string"}
+              }
+            },
+            "default": []
+          }
+        }
+      }
+    }
+  }
+}

@@ -67,6 +67,17 @@ The `profiles.yml` uses environment variables so the same repo can back local de
 Infrastructure defaults in the repo are intentionally non-production placeholders.
 Replace them with your own S3, Athena, AWS, and dbt Cloud settings before real use.
 
+## GitHub Deployments
+
+GitHub Actions supports environment-aware deployments:
+
+- pushes to `develop` deploy to the `dev` dbt target
+- pushes to `main` deploy to the protected `prod` dbt target
+- manual dispatch can deploy either target
+
+Create matching GitHub Environments named `dev` and `prod`, and configure the
+variables/secrets listed in `docs/environments.md`.
+
 ## dbt Cloud Design
 
 Recommended dbt Cloud setup:

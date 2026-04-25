@@ -37,6 +37,13 @@ models:
           - not_null
       - name: list_rate
         description: Latest published listed rate in percent.
+      - name: listed_rate_age_days
+        description: Age in days of the latest listed-rate scrape for this bank and fixing period.
+      - name: listed_rate_freshness
+        description: Freshness classification for the latest listed-rate scrape.
+        tests:
+          - accepted_values:
+              values: ['fresh', 'aging', 'stale']
       - name: funding_model
         description: Stylized funding structure used for the mortgage bucket.
       - name: funding_weight_2y
@@ -71,5 +78,19 @@ models:
           - not_null
       - name: scb_new_loan_rate
         description: SCB average rate for new loans in the mapped bucket.
+      - name: listed_rate_age_days
+        description: Age in days of the latest listed-rate scrape for this bank and fixing period.
+      - name: listed_rate_freshness
+        description: Freshness classification for the latest listed-rate scrape.
+        tests:
+          - accepted_values:
+              values: ['fresh', 'aging', 'stale']
+      - name: scb_rate_age_days
+        description: Age in days of the latest SCB market-average rows for the mapped bucket.
+      - name: scb_rate_freshness
+        description: Freshness classification for SCB market-average rows in the mapped bucket.
+        tests:
+          - accepted_values:
+              values: ['fresh', 'aging', 'stale']
       - name: effective_margin_new
         description: Estimated effective margin using the SCB new-loan rate.

@@ -42,6 +42,40 @@ The project config sets `staging` and `marts` custom schemas so each target gets
 - Production environment:
   merge job running from `main`
 
+## GitHub Environments
+
+Create two GitHub Environments:
+
+- `dev`
+  runs from `develop` or manual workflow dispatch and writes to
+  `swedish_mortgages_dev_*` schemas
+- `prod`
+  runs from `main`, should require approval/protected branch rules, and writes
+  to `swedish_mortgages_prod_*` schemas
+
+Environment variables:
+
+- `AWS_REGION`
+- `DBT_ATHENA_DATABASE`
+- `DBT_ATHENA_STAGING_DIR`
+- `DBT_ATHENA_DATA_DIR`
+- `SWEDISH_FINANCE_RAW_SCHEMA`
+- `DBT_DEV_SCHEMA`
+- `DBT_PROD_SCHEMA`
+- `DBT_THREADS`
+- `AWS_ROLE_ARN`
+
+No AWS access-key secrets are required for dbt when GitHub OIDC is configured.
+The deploy workflow assumes `AWS_ROLE_ARN` with GitHub's OIDC token.
+
+Environment secrets:
+
+- none required for the default OIDC dbt deployment path
+
+Production should use a service account with least-privilege access to the raw
+S3 prefixes, dbt-managed S3 prefix, Athena query-results bucket, and Glue/Athena
+metadata operations needed by dbt.
+
 ## Recommended Jobs
 
 - CI job:
@@ -50,4 +84,3 @@ The project config sets `staging` and `marts` custom schemas so each target gets
   `dbt source freshness --select source:swedish_finance`
 - Production merge job:
   `dbt build`
-

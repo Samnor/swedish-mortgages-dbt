@@ -36,12 +36,10 @@ latest_listed as (
         period_label,
         period_years,
         list_rate,
-        avg_rate
-    from {{ ref('stg_bank_listed_rates') }}
-    where scrape_date = (
-        select max(scrape_date)
-        from {{ ref('stg_bank_listed_rates') }}
-    )
+        avg_rate,
+        listed_rate_age_days,
+        listed_rate_freshness
+    from {{ ref('int_latest_bank_listed_rates') }}
 ),
 
 funding_components as (
@@ -52,6 +50,8 @@ funding_components as (
         l.period_years,
         l.list_rate,
         l.avg_rate,
+        l.listed_rate_age_days,
+        l.listed_rate_freshness,
         m.funding_date,
         case
             when l.period_years <= 1.0 then 'swapped_covered_bond_variable_proxy'
@@ -120,6 +120,8 @@ select
     f.period_years,
     f.list_rate,
     f.avg_rate,
+    f.listed_rate_age_days,
+    f.listed_rate_freshness,
     f.funding_model,
     f.funding_weight_2y,
     f.funding_weight_5y,

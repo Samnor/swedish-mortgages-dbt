@@ -31,10 +31,14 @@ Each plist uses a placeholder absolute path and should be edited before loading.
 
 - Pull request:
   run parse and lint checks
-- Optional PR CI in dbt Cloud:
-  triggered from the connected repo
+- Push to `develop` or manual `dev` dispatch:
+  deploy dbt to the `dev` target
 - Merge to `main`:
-  trigger production deployment job
+  deploy dbt to the `prod` target through the protected `prod` GitHub
+  Environment
+- Optional dbt Cloud:
+  keep the dbt Cloud trigger workflow if you want dbt Cloud jobs and Catalog to
+  be the production control plane
 
 ## First dbt Cloud Tasks
 

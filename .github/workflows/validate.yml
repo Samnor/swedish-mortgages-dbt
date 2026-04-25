@@ -29,5 +29,8 @@ jobs:
       - name: dbt parse
         run: dbt parse
 
+      - name: App contract validation
+        run: python scripts/validate_app_contracts.py
+
       - name: SQLFluff lint
         run: sqlfluff lint --ignore=templating --templater jinja models

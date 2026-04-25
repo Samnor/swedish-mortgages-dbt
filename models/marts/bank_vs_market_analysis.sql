@@ -34,12 +34,10 @@ latest_listed as (
         bank,
         period_label as period_label_display,
         period_years,
-        list_rate
-    from {{ ref('stg_bank_listed_rates') }}
-    where scrape_date = (
-        select max(scrape_date)
-        from {{ ref('stg_bank_listed_rates') }}
-    )
+        list_rate,
+        listed_rate_age_days,
+        listed_rate_freshness
+    from {{ ref('int_latest_bank_listed_rates') }}
 ),
 
 latest_scb as (
@@ -47,12 +45,15 @@ latest_scb as (
         period_label,
         max(case when loan_type = '0100' then rate end) as new_loan_rate,
         max(case when loan_type = '0200' then rate end) as outstanding_rate,
-        max(period_month) as scb_period_month
-    from {{ ref('stg_scb_mortgage_rates') }}
-    where period_month = (
-        select max(period_month)
-        from {{ ref('stg_scb_mortgage_rates') }}
-    )
+        max(case when loan_type = '0100' then period_month end) as scb_new_loan_period_month,
+        max(case when loan_type = '0200' then period_month end) as scb_outstanding_period_month,
+        max(scb_rate_age_days) as scb_rate_age_days,
+        case
+            when max(case when scb_rate_freshness = 'stale' then 1 else 0 end) = 1 then 'stale'
+            when max(case when scb_rate_freshness = 'aging' then 1 else 0 end) = 1 then 'aging'
+            else 'fresh'
+        end as scb_rate_freshness
+    from {{ ref('int_latest_scb_mortgage_rates') }}
     group by period_label
 ),
 
@@ -62,6 +63,8 @@ funding_components as (
         l.period_label_display,
         l.period_years,
         l.list_rate,
+        l.listed_rate_age_days,
+        l.listed_rate_freshness,
         m.funding_date,
         case
             when l.period_years <= 1.0 then 'swapped_covered_bond_variable_proxy'
@@ -136,8 +139,12 @@ select
         when f.period_years > 5.0 then '5Y+'
     end as scb_bucket,
     f.list_rate,
+    f.listed_rate_age_days,
+    f.listed_rate_freshness,
     s.new_loan_rate as scb_new_loan_rate,
     s.outstanding_rate as scb_outstanding_rate,
+    s.scb_rate_age_days,
+    s.scb_rate_freshness,
     f.funding_model,
     f.funding_weight_2y,
     f.funding_weight_5y,
@@ -177,7 +184,9 @@ select
     ) as effective_margin_new,
     round(f.list_rate - s.new_loan_rate, 4) as list_vs_mkt_discount,
     f.funding_date,
-    s.scb_period_month
+    coalesce(s.scb_new_loan_period_month, s.scb_outstanding_period_month) as scb_period_month,
+    s.scb_new_loan_period_month,
+    s.scb_outstanding_period_month
 from funding_components f
 left join latest_scb s
     on s.period_label = case
