@@ -26,4 +26,6 @@ models:
       +schema: intermediate
     marts:
       +materialized: table
+      +table_type: iceberg
+      +format: parquet
       +schema: marts
