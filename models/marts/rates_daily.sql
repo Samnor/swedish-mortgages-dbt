@@ -1,5 +1,6 @@
 -- Daily Swedish rates with one row per date and all series as columns.
--- Also computes covered-bond spreads over equivalent government bonds.
+-- Mortgage-bond columns use Riksbanken/Refinitiv Stadshypotek CAISSE series,
+-- so covered-bond spreads are market proxies, not bank-specific funding costs.
 
 with base as (
     select *

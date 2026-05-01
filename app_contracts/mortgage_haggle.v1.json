@@ -57,19 +57,19 @@
     "market_rate_context": {
       "owner": "dbt",
       "relation": "rates_daily",
-      "description": "Daily policy, government-bond, covered-bond, and spread context.",
+      "description": "Daily policy, government-bond, and Riksbanken/Refinitiv Stadshypotek CAISSE mortgage-bond proxy context.",
       "freshness_field": "rate_date"
     },
     "bank_offer_comparison": {
       "owner": "dbt",
       "relation": "bank_vs_market_analysis",
-      "description": "Latest listed bank rates compared with SCB market averages and estimated funding cost.",
+      "description": "Latest listed bank rates compared with SCB market averages and a stylized Swedish mortgage-bond market funding proxy.",
       "freshness_field": "funding_date"
     },
     "bank_margin_context": {
       "owner": "dbt",
       "relation": "bank_margin_analysis",
-      "description": "Latest listed rates with estimated funding cost and gross margin by bank and fixing period.",
+      "description": "Latest listed rates with stylized CAISSE-based market funding proxy and gross margin by bank and fixing period.",
       "freshness_field": "scrape_date"
     },
     "payment_scenarios": {

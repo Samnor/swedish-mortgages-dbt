@@ -3,17 +3,18 @@ version: 2
 models:
   - name: rates_daily
     description: >
-      Wide-format daily rates with one row per date and covered-bond spreads
-      over equivalent government bonds.
+      Wide-format daily rates with one row per date. Mortgage-bond columns use
+      Riksbanken/Refinitiv Stadshypotek CAISSE series, and covered-bond spreads
+      are Swedish mortgage-bond market proxies over equivalent government bonds.
     columns:
       - name: rate_date
         description: Calendar date.
         tests:
           - not_null
       - name: spread_2y
-        description: 2Y covered-bond yield minus 2Y government-bond yield.
+        description: 2Y Stadshypotek CAISSE mortgage-bond proxy yield minus 2Y government-bond yield.
       - name: spread_5y
-        description: 5Y covered-bond yield minus 5Y government-bond yield.
+        description: 5Y Stadshypotek CAISSE mortgage-bond proxy yield minus 5Y government-bond yield.
       - name: stibor_policy_spread_3m
         description: 3M STIBOR minus the policy rate.
       - name: swestr_policy_spread_3m
@@ -22,10 +23,12 @@ models:
   - name: bank_margin_analysis
     description: >
       Latest listed bank rates with estimated gross margins over a stylized
-      Swedish mortgage funding stack. Variable-rate buckets are modeled as
-      longer covered-bond funding swapped into 3M money-market exposure, while
-      fixed buckets use covered-bond curve components with interpolation
-      between 2Y and 5Y where needed.
+      Swedish mortgage-bond market proxy. The covered-bond component uses
+      Riksbanken/Refinitiv Stadshypotek CAISSE series, not each bank's observed
+      internal or issuer-specific funding cost. Variable-rate buckets are
+      modeled as longer covered-bond funding swapped into 3M money-market
+      exposure, while fixed buckets use covered-bond curve components with
+      interpolation between 2Y and 5Y where needed.
     columns:
       - name: bank
         description: Bank name.
@@ -45,7 +48,7 @@ models:
           - accepted_values:
               values: ['fresh', 'aging', 'stale']
       - name: funding_model
-        description: Stylized funding structure used for the mortgage bucket.
+        description: Stylized proxy structure used for the mortgage bucket.
       - name: funding_weight_2y
         description: Weight on the 2Y point when the funding curve is interpolated.
       - name: funding_weight_5y
@@ -57,16 +60,17 @@ models:
       - name: risk_free_curve_component
         description: Government-bond curve component for fixed-rate funding.
       - name: covered_bond_spread_component
-        description: Covered-bond spread component over the risk-free curve.
+        description: Stadshypotek CAISSE covered-bond market-proxy spread component over the risk-free curve.
       - name: funding_cost
-        description: Stylized funding-cost estimate in percent.
+        description: Stylized market funding proxy in percent; not an observed bank-specific funding cost.
       - name: gross_margin
         description: Estimated gross margin in percentage points.
 
   - name: bank_vs_market_analysis
     description: >
       Listed bank rates versus SCB market-average rates and the same stylized
-      mortgage funding stack used in the listed-rate margin analysis.
+      Stadshypotek CAISSE mortgage-bond market proxy used in the listed-rate
+      margin analysis.
     columns:
       - name: bank
         description: Bank name.

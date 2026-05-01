@@ -1,7 +1,7 @@
 -- Bank listed rates versus SCB MFI market-average rates and a stylized Swedish
--- mortgage funding stack. Variable-rate buckets are modeled as longer covered
--- bond funding swapped into 3M money-market exposure, while fixed buckets use
--- a covered-bond curve with interpolation between 2Y and 5Y.
+-- mortgage-bond market proxy. The covered-bond component uses the
+-- Riksbanken/Refinitiv Stadshypotek CAISSE series, not each bank's observed
+-- internal or issuer-specific funding cost.
 
 with latest_market as (
     select
@@ -160,9 +160,9 @@ select
         4
     ) as funding_cost,
     case
-        when f.period_years <= 1.0 then 'policy_rate + (swestr_3m_avg - policy_rate) + spread_5y'
-        when f.period_years < 5.0 then 'blended govt curve + blended covered spread (2Y to 5Y)'
-        else 'govbond_5y + spread_5y'
+        when f.period_years <= 1.0 then 'policy_rate + (swestr_3m_avg - policy_rate) + CAISSE spread_5y'
+        when f.period_years < 5.0 then 'blended govt curve + blended CAISSE covered spread (2Y to 5Y)'
+        else 'govbond_5y + CAISSE spread_5y'
     end as funding_cost_source,
     round(
         f.list_rate - (

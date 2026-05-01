@@ -25,7 +25,8 @@ This repo exists for two reasons:
 - `ops/launchd/`
   Local macOS schedulers for the pollers.
 - `docs/`
-  Environment design, architecture notes, and deployment workflow.
+  Environment design, architecture notes, funding-proxy notes, and deployment
+  workflow.
 - `.github/workflows/`
   GitHub Actions validation and deploy scaffolding.
 

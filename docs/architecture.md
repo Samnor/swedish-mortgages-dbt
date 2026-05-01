@@ -6,7 +6,7 @@ This repo owns the Swedish mortgage analysis stack:
 
 - raw ingestion from Riksbanken, SCB, and bank websites
 - Athena external tables in raw schema `swedish_finance`
-- dbt staging and marts for funding-cost and mortgage spread analysis
+- dbt staging and marts for CAISSE-based funding-proxy and mortgage spread analysis
 - downstream dashboard metadata through dbt exposures
 
 It does not own Home Assistant, room-plan, or apartment telemetry models.
@@ -30,9 +30,11 @@ The staging layer standardizes types, applies deduplication, and exposes stable 
 The marts answer the business questions:
 
 - `rates_daily`:
-  normalized daily rate curve and covered-bond spreads
+  normalized daily rate curve and covered-bond spreads. The covered-bond inputs
+  are Riksbanken/Refinitiv Swedish mortgage-bond market series; see
+  [funding-proxy.md](funding-proxy.md) for the CAISSE/Stadshypotek assumptions.
 - `bank_margin_analysis`:
-  latest listed rates against funding-cost proxies
+  latest listed rates against a CAISSE-based Swedish mortgage-bond market proxy
 - `bank_vs_market_analysis`:
   listed bank rates versus SCB market averages
 
@@ -47,4 +49,3 @@ This repo is designed to support practice for:
 - docs/Catalog metadata through descriptions and exposures
 - merge-based production deployment design
 - service-account deploy patterns
-
