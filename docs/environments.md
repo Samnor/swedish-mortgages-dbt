@@ -60,6 +60,7 @@ Environment variables:
 - `DBT_ATHENA_STAGING_DIR`
 - `DBT_ATHENA_DATA_DIR`
 - `SWEDISH_FINANCE_RAW_SCHEMA`
+- `SWEDISH_MORTGAGES_S3_BUCKET`
 - `DBT_DEV_SCHEMA`
 - `DBT_PROD_SCHEMA`
 - `DBT_THREADS`
@@ -82,5 +83,8 @@ metadata operations needed by dbt.
   `dbt build --select state:modified+ --defer --state path/to/prod/artifacts`
 - Source freshness job:
   `dbt source freshness --select source:swedish_finance`
+- Raw ingestion job:
+  GitHub `Ingest Raw Sources` workflow, scheduled on weekdays for daily sources,
+  monthly for SCB, and runnable manually by source
 - Production merge job:
   `dbt build`
