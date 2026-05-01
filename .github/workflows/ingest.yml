@@ -105,6 +105,14 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt -r requirements-dev.txt
 
+      - name: Resolve ingestion environment
+        run: |
+          if [ -z "$SWEDISH_MORTGAGES_S3_BUCKET" ] && [[ "$DBT_ATHENA_DATA_DIR" == s3://* ]]; then
+            BUCKET="${DBT_ATHENA_DATA_DIR#s3://}"
+            BUCKET="${BUCKET%%/*}"
+            echo "SWEDISH_MORTGAGES_S3_BUCKET=$BUCKET" >> "$GITHUB_ENV"
+          fi
+
       - name: Validate required environment
         run: |
           test -n "$AWS_ROLE_ARN"

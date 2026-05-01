@@ -66,6 +66,10 @@ Environment variables:
 - `DBT_THREADS`
 - `AWS_ROLE_ARN`
 
+`SWEDISH_MORTGAGES_S3_BUCKET` can be omitted for GitHub ingestion when the raw
+landing bucket is the same bucket in `DBT_ATHENA_DATA_DIR`; the ingestion
+workflow derives the bucket name from that S3 URI.
+
 No AWS access-key secrets are required for dbt when GitHub OIDC is configured.
 The deploy workflow assumes `AWS_ROLE_ARN` with GitHub's OIDC token.
 

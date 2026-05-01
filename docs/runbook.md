@@ -24,10 +24,13 @@ EventBridge/Lambda/ECS without rewriting the source-specific ingestion logic.
 Required GitHub environment variables:
 
 - `AWS_ROLE_ARN`
-- `SWEDISH_MORTGAGES_S3_BUCKET`
 - `DBT_ATHENA_STAGING_DIR`
 - `DBT_ATHENA_DATA_DIR`
 - `SWEDISH_FINANCE_RAW_SCHEMA`
+
+`SWEDISH_MORTGAGES_S3_BUCKET` is optional when the ingestion bucket is the same
+bucket used by `DBT_ATHENA_DATA_DIR`; the workflow derives it from that S3 URI.
+Set it explicitly only if raw ingestion should land in a different bucket.
 
 Optional source-prefix variables:
 
