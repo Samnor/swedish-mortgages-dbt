@@ -81,6 +81,13 @@ Production should use a service account with least-privilege access to the raw
 S3 prefixes, dbt-managed S3 prefix, Athena query-results bucket, and Glue/Athena
 metadata operations needed by dbt.
 
+For ingestion, the production role also needs `s3:PutObject` on these raw
+landing prefixes:
+
+- `arn:aws:s3:::dbt-data-lake-642948445774/se-rates/*`
+- `arn:aws:s3:::dbt-data-lake-642948445774/bank-listed-rates/*`
+- `arn:aws:s3:::dbt-data-lake-642948445774/scb-mortgage-rates/*`
+
 ## Recommended Jobs
 
 - CI job:

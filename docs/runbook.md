@@ -32,6 +32,12 @@ Required GitHub environment variables:
 bucket used by `DBT_ATHENA_DATA_DIR`; the workflow derives it from that S3 URI.
 Set it explicitly only if raw ingestion should land in a different bucket.
 
+The GitHub OIDC role must be allowed to write raw files to:
+
+- `s3://dbt-data-lake-642948445774/se-rates/`
+- `s3://dbt-data-lake-642948445774/bank-listed-rates/`
+- `s3://dbt-data-lake-642948445774/scb-mortgage-rates/`
+
 Optional source-prefix variables:
 
 - `SWEDISH_MORTGAGES_SE_RATES_PREFIX`
